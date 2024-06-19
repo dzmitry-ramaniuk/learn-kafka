@@ -16,9 +16,7 @@ sourceSets {
     integrationTest {
         java {
             compileClasspath += sourceSets.main.output
-//            + sourceSets.integrationTest.output
             runtimeClasspath += sourceSets.main.output
-//            + sourceSets.integrationTest.output
             srcDir file('src/integrationTest/java')
         }
         resources.srcDir file('src/integrationTest/resources')
@@ -29,11 +27,6 @@ configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
-
-//configurations {
-//    integrationTestImplementation.extendsFrom implementation
-//    integrationTestRuntimeOnly.extendsFrom runtimeOnly
-//}
 
 dependencies {
     implementation platform('org.springframework.boot:spring-boot-dependencies:3.3.0')
@@ -70,7 +63,3 @@ tasks.register('integrationTest', Test) {
 }
 
 check.dependsOn integrationTest
-
-// processResources  {
-//     expand('application.properties')
-// }

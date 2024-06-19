@@ -27,3 +27,4 @@ replay_pid*
 .gradle
 *.iml
 producer/build
+consumer/build
