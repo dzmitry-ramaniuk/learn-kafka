@@ -1,0 +1,76 @@
+plugins {
+    id "io.freefair.lombok" version "8.6"
+    id 'org.springframework.boot' version '3.3.0'
+    id 'java'
+}
+
+group = 'com.learn'
+version = '1.0-SNAPSHOT'
+sourceCompatibility = '21'
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    integrationTest {
+        java {
+            compileClasspath += sourceSets.main.output
+//            + sourceSets.integrationTest.output
+            runtimeClasspath += sourceSets.main.output
+//            + sourceSets.integrationTest.output
+            srcDir file('src/integrationTest/java')
+        }
+        resources.srcDir file('src/integrationTest/resources')
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+//configurations {
+//    integrationTestImplementation.extendsFrom implementation
+//    integrationTestRuntimeOnly.extendsFrom runtimeOnly
+//}
+
+dependencies {
+    implementation platform('org.springframework.boot:spring-boot-dependencies:3.3.0')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'org.apache.kafka:kafka-clients:3.7.0'
+
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.testcontainers:junit-jupiter:1.19.8'
+    testImplementation 'org.testcontainers:kafka:1.19.8'
+    testImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.1'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Run integration tests'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
+
+    useJUnitPlatform()
+
+    testLogging {
+        events 'passed'
+    }
+}
+
+check.dependsOn integrationTest
+
+// processResources  {
+//     expand('application.properties')
+// }
