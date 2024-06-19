@@ -34,6 +34,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -82,10 +83,12 @@ public class CreateClientTest {
                         Assertions.fail("Message not found");
                     }
 
+                    assertEquals(1, records.count());
+
                     for (var record : records) {
                         Client result = mapper.readValue(record.value(), Client.class);
 
-                        Assertions.assertEquals(client, result);
+                        assertEquals(client, result);
                     }
                 });
 
@@ -124,10 +127,12 @@ public class CreateClientTest {
                         Assertions.fail("Message not found");
                     }
 
+                    assertEquals(1, records.count());
+
                     for (var record : records) {
                         Transaction result = mapper.readValue(record.value(), Transaction.class);
 
-                        Assertions.assertEquals(transaction, result);
+                        assertEquals(transaction, result);
                     }
                 });
 
