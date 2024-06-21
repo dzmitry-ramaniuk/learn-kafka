@@ -31,7 +31,48 @@ services:
     command: >
       bash -c "cub kafka-ready -b kafka:29092 1 60 &&
               kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic client.create &&
-              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic transaction.create"
+              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic transaction.create &&
+              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic connect-config --config cleanup.policy=compact &&
+              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic connect-offset --config cleanup.policy=compact && 
+              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic connect-status --config cleanup.policy=compact"
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:latest
+    container_name: connect
+    depends_on:
+      - kafka
+    ports:
+      - "8083:8083"
+    environment:
+      - CONNECT_BOOTSTRAP_SERVERS=kafka:29092
+      - CONNECT_GROUP_ID=connect
+      - CONNECT_CONFIG_STORAGE_TOPIC=connect-config
+      - CONNECT_OFFSET_STORAGE_TOPIC=connect-offset
+      - CONNECT_STATUS_STORAGE_TOPIC=connect-status
+      - CONNECT_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
+      - CONNECT_REST_ADVERTISED_HOST_NAME=kafka-connect
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:latest
+    container_name: control-center
+    depends_on:
+      - kafka
+      - kafka-connect
+    ports:
+        - "9021:9021"
+    environment:
+      - CONTROL_CENTER_BOOTSTRAP_SERVERS=kafka:29092
+      - CONTROL_CENTER_REPLICATION_FACTOR=1
+      - CONTROL_CENTER_INTERNAL_TOPICS_PARTITIONS=1
+      - CONTROL_CENTER_MONITORING_INTERCEPTOR_TOPIC_PARTITIONS=1
+      - CONTROL_CENTER_COMMAND_TOPIC_REPLICATION_FACTOR=1
+      - CONTROL_CENTER_STREAMS_NUM_STREAM_THREADS=1
+      - CONTROL_CENTER_CONNECT_CONNECT-DEFAULT_CLUSTER=kafka-connect:8083
+      - CONTROL_CENTER_CONNECT_HEALTHCHECK_ENDPOINT=/connectors
+
   db:
     image: postgres:latest
     container_name: postgres
