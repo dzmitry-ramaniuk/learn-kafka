@@ -34,7 +34,7 @@ public class TransactionConsumer {
         new Thread(() -> {
             while (true) {
                 kafkaConsumerTransaction.poll(Duration.ofMillis(1000)).forEach(transactionRecord -> {
-                    log.info("Received message: " + transactionRecord.value());
+                    log.info("Received message: {}", transactionRecord.value());
 
                     TransactionDto transactionDto = null;
                     try {

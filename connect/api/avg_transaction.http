@@ -1,0 +1,20 @@
+### GET request to example server
+POST http://localhost:8083/connectors
+Content-Type: application/json
+
+{
+  "name": "pg-average",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "tasks.max": "1",
+    "connection.url": "jdbc:postgresql://postgres:5432/transaction",
+    "connection.user": "postgres",
+    "connection.password": "postgres",
+    "query": "select client_id, avg(cost) from transaction where created_at >= CURRENT_DATE - INTERVAL '1 day' and created_at < CURRENT_DATE group by client_id",
+    "mode": "bulk",
+    "topic.prefix": "pg-transaction",
+    "poll.interval.ms": "1000"
+  }
+}
+
+###

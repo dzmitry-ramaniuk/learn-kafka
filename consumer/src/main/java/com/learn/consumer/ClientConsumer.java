@@ -36,11 +36,11 @@ public class ClientConsumer {
                         clientService.save(objectMapper.readValue(clientRecord.value(), Client.class));
                     } catch (JsonProcessingException e) {
                         log.error("Error parsing message", e);
+                    } catch (Exception e) {
+                        log.error("Error saving client", e);
                     }
                 });
             }
         }).start();
     }
-
-
 }
