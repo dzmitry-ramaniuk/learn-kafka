@@ -32,6 +32,18 @@ services:
       bash -c "cub kafka-ready -b kafka:29092 1 60 &&
               kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic client.create &&
               kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic transaction.create"
+  db:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: transaction
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
 
   app:
     build:
@@ -43,3 +55,16 @@ services:
       - "8080:8080"
     environment:
       - KAFKA_HOST=kafka:29092
+
+  consumer:
+    build:
+      context: ./consumer
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - db
+    environment:
+      - KAFKA_HOST=kafka:29092
+      - spring.datasource.url=jdbc:postgresql://postgres:5432/transaction
+      - spring.datasource.username=postgres
+      - spring.datasource.password=postgres
