@@ -32,6 +32,10 @@ services:
       bash -c "cub kafka-ready -b kafka:29092 1 60 &&
               kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic client.create &&
               kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic transaction.create &&
+              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic pg-transaction &&
+              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic db.changes.public.client &&
+              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic db.changes.public.transaction &&
+              kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic schema-changes.inventory &&
               kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic connect-config --config cleanup.policy=compact &&
               kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic connect-offset --config cleanup.policy=compact && 
               kafka-topics --create --if-not-exists --bootstrap-server kafka:29092 --partitions 1 --replication-factor 1 --topic connect-status --config cleanup.policy=compact"
@@ -54,6 +58,8 @@ services:
       - CONNECT_INTERNAL_KEY_CONVERTER=org.apache.kafka.connect.json.JsonConverter
       - CONNECT_INTERNAL_VALUE_CONVERTER=org.apache.kafka.connect.json.JsonConverter
       - CONNECT_REST_ADVERTISED_HOST_NAME=kafka-connect
+    volumes:
+      - ./connect/plugins:/etc/kafka-connect/jars
 
   control-center:
     image: confluentinc/cp-enterprise-control-center:latest
@@ -84,6 +90,7 @@ services:
       - "5433:5432"
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: ["postgres", "-c", "wal_level=logical"]
 
 
   app:
@@ -106,6 +113,6 @@ services:
       - db
     environment:
       - KAFKA_HOST=kafka:29092
-      - spring.datasource.url=jdbc:postgresql://postgres:5432/transaction
+      - spring.datasource.url=jdbc:postgresql://db:5432/transaction
       - spring.datasource.username=postgres
       - spring.datasource.password=postgres

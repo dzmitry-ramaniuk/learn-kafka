@@ -1,0 +1,26 @@
+### GET request to example server
+POST http://localhost:8083/connectors
+Content-Type: application/json
+
+{
+  "name": "postgres-connector",
+  "config": {
+    "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+    "tasks.max": "1",
+    "database.hostname": "postgres",
+    "database.port": "5432",
+    "database.user": "postgres",
+    "database.password": "postgres",
+    "database.dbname": "transaction",
+    "database.server.name": "db",
+    "table.include.list": "public.client, public.transaction",
+    "plugin.name": "pgoutput",
+    "slot.name": "debezium",
+    "publication.name": "dbz_publication",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.inventory",
+    "topic.prefix": "db.changes"
+  }
+}
+
+###
